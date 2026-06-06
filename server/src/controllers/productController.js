@@ -70,34 +70,29 @@ export const createProduct = async (req, res) => {
 export const updateProduct = async (req, res) => {
   try {
     const { id } = req.params;
-    const {
-      name,
-      quantity_grams,
-      supplier_id,
-      supplier_price,
-      product_category_id,
-    } = req.body;
+    const { name, quantity_grams, supplier_id, supplier_price, product_category_id } = req.body;
+    
     const [result] = await db.query(
       "UPDATE Products SET name = ?, quantity_grams = ?, supplier_id = ?, supplier_price = ?, product_category_id = ? WHERE product_id = ?",
-      [
-        name,
-        quantity_grams || null,
-        supplier_id || null,
-        supplier_price || null,
-        product_category_id || null,
-        id,
-      ]
+      [name, quantity_grams || null, supplier_id || null, supplier_price || null, product_category_id || null, id]
     );
+
     if (result.affectedRows === 0) {
       return res.status(404).json({ error: "Продукт не знайдено" });
     }
+
+    const io = req.app.get("io");
+    io.emit("product_updated", { 
+      message: `Товар "${name}" був змінений!` 
+    });
+
+
     res.json({ message: "Продукт успішно оновлено" });
   } catch (error) {
     console.error(error);
     res.status(500).json({ error: "Не вдалося оновити продукт" });
   }
 };
-
 export const deleteProduct = async (req, res) => {
   try {
     const { id } = req.params;
