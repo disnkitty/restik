@@ -968,10 +968,10 @@ const handleEmployeeSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
   const formData = new FormData(e.currentTarget); 
   
   const phone = formData.get('phone') as string; 
-  const phoneRegex = /^0\d{9}$/;
+  const phoneRegex = /^(?:\+380|0)\d{9}$/;
   
   if (phone && !phoneRegex.test(phone)) {
-    alert("Помилка: Невірний формат телефону! Введіть 10 цифр, починаючи з 0 (наприклад: 0671234567).");
+    alert("Помилка: Невірний формат телефону! Введіть номер у форматі +380XXXXXXXXX або 0XXXXXXXXX.");
     return;
   }
 
@@ -983,6 +983,12 @@ const handleEmployeeSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     return; 
   }
 
+  const passport = formData.get('passport') as string; 
+const passportRegex = /^([A-ZА-ЯІЇЄҐ]{2}\d{6}|\d{9})$/i;
+  if (passport && !passportRegex.test(passport)) {
+    alert("Помилка: Невірний формат паспорта! Введіть серію та номер (наприклад: АВ123456) або 9 цифр ID-картки.");
+    return;
+  }
     const data = {
       full_name: formData.get('full_name') as string,
 
