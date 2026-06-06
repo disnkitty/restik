@@ -672,18 +672,17 @@ useEffect(() => {
     });
   };
 
-  const handleProductSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
-    e.preventDefault();
-    const formData = new FormData(e.currentTarget);
-    const priceString = formData.get('supplier_price') as string;
-    const priceRegex = /^\d+(\.\d{1,2})?$/;
+const handleProductSubmit = async (e: React.FormEvent<HTMLFormElement>) => { 
+  e.preventDefault(); 
+  const formData = new FormData(e.currentTarget); 
+    const priceString = formData.get('supplier_price') as string; 
+  const priceRegex = /^\d+(\.\d{1,2})?$/; 
 
-    if (priceString && !priceRegex.test(priceString)) {
-      alert(
-        'Помилка: Ціна має бути числом у форматі 0.00 (наприклад: 15.50 або 200).',
-      );
-      return;
-    }
+  if (priceString && !priceRegex.test(priceString)) {
+    alert("Помилка: Ціна має бути числом у форматі 0.00 (наприклад: 15.50 або 200).");
+    return;
+  }
+
 
     const data = {
       name: formData.get('name') as string,
@@ -964,27 +963,24 @@ useEffect(() => {
     }
   };
 
-  const handleEmployeeSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
-    e.preventDefault();
-    const formData = new FormData(e.currentTarget);
-    const phone = formData.get('phone') as string;
-
-    const phoneRegex = /^0\d{9}$/;
-
-    if (phone && !phoneRegex.test(phone)) {
-      alert(
-        'Помилка: Невірний формат телефону! Введіть 10 цифр, починаючи з 0 (наприклад: 0671234567).',
-      );
-      return;
-    }
- 
-  const email = formData.get("employee_email") as string;
- 
-  const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-
-  if (email && !emailRegex.test(email)) {
-    alert("Помилка: Невірний формат електронної пошти (приклад: ivan@test.com).");
+const handleEmployeeSubmit = async (e: React.FormEvent<HTMLFormElement>) => { 
+  e.preventDefault(); 
+  const formData = new FormData(e.currentTarget); 
+  
+  const phone = formData.get('phone') as string; 
+  const phoneRegex = /^0\d{9}$/;
+  
+  if (phone && !phoneRegex.test(phone)) {
+    alert("Помилка: Невірний формат телефону! Введіть 10 цифр, починаючи з 0 (наприклад: 0671234567).");
     return;
+  }
+
+  const email = formData.get("employee_email") as string; 
+  const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/; 
+
+  if (email && !emailRegex.test(email)) { 
+    alert("Помилка: Невірний формат електронної пошти (приклад: ivan@test.com)."); 
+    return; 
   }
 
     const data = {
