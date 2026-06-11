@@ -1,46 +1,44 @@
-import db from "../config/db.js";
+import db from '../config/db.js';
 
 export const getDishesCount = async (req, res) => {
   try {
-    const [rows] = await db.query("SELECT COUNT(*) as count FROM dishes");
+    const [rows] = await db.query('SELECT COUNT(*) as count FROM dishes');
     res.json({ count: rows[0].count });
   } catch (error) {
     console.error(error);
-    res.status(500).json({ error: "Помилка отримання статистики" });
+    res.status(500).json({ error: 'Помилка отримання статистики' });
   }
 };
-
 
 export const getProductsCount = async (req, res) => {
   try {
-    const [rows] = await db.query("SELECT COUNT(*) as count FROM products");
+    const [rows] = await db.query('SELECT COUNT(*) as count FROM products');
     res.json({ count: rows[0].count });
   } catch (error) {
     console.error(error);
-    res.status(500).json({ error: "Помилка отримання статистики" });
+    res.status(500).json({ error: 'Помилка отримання статистики' });
   }
 };
 
-
 export const getRecipesCount = async (req, res) => {
   try {
-    const [rows] = await db.query("SELECT COUNT(*) as count FROM recipes");
+    const [rows] = await db.query('SELECT COUNT(*) as count FROM recipes');
     res.json({ count: rows[0].count });
   } catch (error) {
     console.error(error);
-    res.status(500).json({ error: "Помилка отримання статистики" });
+    res.status(500).json({ error: 'Помилка отримання статистики' });
   }
 };
 
 export const getAveragePrice = async (req, res) => {
   try {
     const [rows] = await db.query(
-      "SELECT AVG(price_for_client) as avg_price FROM dishes"
+      'SELECT AVG(price_for_client) as avg_price FROM dishes',
     );
     res.json({ avg_price: parseFloat(rows[0].avg_price || 0).toFixed(2) });
   } catch (error) {
     console.error(error);
-    res.status(500).json({ error: "Помилка отримання статистики" });
+    res.status(500).json({ error: 'Помилка отримання статистики' });
   }
 };
 
@@ -57,7 +55,7 @@ export const getDishesWithMostIngredients = async (req, res) => {
     res.json(rows);
   } catch (error) {
     console.error(error);
-    res.status(500).json({ error: "Помилка отримання статистики" });
+    res.status(500).json({ error: 'Помилка отримання статистики' });
   }
 };
 
@@ -74,7 +72,7 @@ export const getLowStockProducts = async (req, res) => {
     res.json(rows);
   } catch (error) {
     console.error(error);
-    res.status(500).json({ error: "Помилка отримання статистики" });
+    res.status(500).json({ error: 'Помилка отримання статистики' });
   }
 };
 
@@ -98,7 +96,7 @@ export const getTopDishes = async (req, res) => {
     res.json(rows);
   } catch (error) {
     console.error(error);
-    res.status(500).json({ error: "Помилка отримання статистики" });
+    res.status(500).json({ error: 'Помилка отримання статистики' });
   }
 };
 
@@ -123,7 +121,7 @@ export const getEmployeePerformance = async (req, res) => {
     res.json(rows);
   } catch (error) {
     console.error(error);
-    res.status(500).json({ error: "Помилка отримання статистики" });
+    res.status(500).json({ error: 'Помилка отримання статистики' });
   }
 };
 
@@ -150,7 +148,7 @@ export const getClientLoyalty = async (req, res) => {
     res.json(rows);
   } catch (error) {
     console.error(error);
-    res.status(500).json({ error: "Помилка отримання статистики" });
+    res.status(500).json({ error: 'Помилка отримання статистики' });
   }
 };
 
@@ -172,18 +170,54 @@ export const getProductUsage = async (req, res) => {
     res.json(rows);
   } catch (error) {
     console.error(error);
-    res.status(500).json({ error: "Помилка отримання статистики" });
+    res.status(500).json({ error: 'Помилка отримання статистики' });
   }
 };
 
+export const trackUserVisit = async (req, res) => {
+  try {
+    const ip = req.headers['x-forwarded-for'] || req.socket.remoteAddress;
+    const [rows] = await db.query(
+      'SELECT * FROM User_Visits WHERE ip_address = ?',
+      [ip],
+    );
+    let currentCount = 1;
+
+    if (rows.length === 0) {
+      await db.query(
+        'INSERT INTO User_Visits (ip_address, last_visit) VALUES (?, NOW())',
+        [ip],
+      );
+    } else {
+      currentCount = rows[0].visit_count + 1;
+      await db.query(
+        'UPDATE User_Visits SET visit_count = ?, last_visit = NOW() WHERE ip_address = ?',
+        [currentCount, ip],
+      );
+    }
+
+    res.json({ ip, count: currentCount });
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ error: 'Помилка роботи лічильника' });
+  }
+};
 
 export const getAllStats = async (req, res) => {
   try {
-    const [dishesCount] = await db.query("SELECT COUNT(*) as count FROM dishes");
-    const [productsCount] = await db.query("SELECT COUNT(*) as count FROM products");
-    const [recipesCount] = await db.query("SELECT COUNT(*) as count FROM recipes");
-    const [avgPrice] = await db.query("SELECT AVG(price_for_client) as avg_price FROM dishes");
-    
+    const [dishesCount] = await db.query(
+      'SELECT COUNT(*) as count FROM dishes',
+    );
+    const [productsCount] = await db.query(
+      'SELECT COUNT(*) as count FROM products',
+    );
+    const [recipesCount] = await db.query(
+      'SELECT COUNT(*) as count FROM recipes',
+    );
+    const [avgPrice] = await db.query(
+      'SELECT AVG(price_for_client) as avg_price FROM dishes',
+    );
+
     res.json({
       dishes_count: dishesCount[0].count,
       products_count: productsCount[0].count,
@@ -192,7 +226,6 @@ export const getAllStats = async (req, res) => {
     });
   } catch (error) {
     console.error(error);
-    res.status(500).json({ error: "Помилка отримання статистики" });
+    res.status(500).json({ error: 'Помилка отримання статистики' });
   }
 };
-

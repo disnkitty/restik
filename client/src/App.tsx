@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import type { Dish } from './types/Dish';
 import type { Product } from './types/Product';
-import { io } from "socket.io-client";
+import { io } from 'socket.io-client';
 import type { Recipe } from './types/Recipe';
 import type { Category } from './types/Category';
 import type { Supplier } from './types/Supplier';
@@ -56,6 +56,7 @@ function App() {
   const [statuses, setStatuses] = useState<Status[]>([]);
   const [supplyDetails, setSupplyDetails] = useState<SupplyDetail[]>([]);
   const [orderDetails, setOrderDetails] = useState<OrderDetail[]>([]);
+  const [userVisitCount, setUserVisitCount] = useState(0);
 
   const [productSearch, setProductSearch] = useState('');
   const [productFilter, setProductFilter] = useState('');
@@ -186,23 +187,22 @@ function App() {
 
   useEffect(() => {
     loadAllData();
+    trackVisit();
   }, []);
 
-useEffect(() => {
-  const socket = io(API_URL);
+  useEffect(() => {
+    const socket = io(API_URL);
 
+    socket.on('product_updated', (data) => {
+      alert('🔔 Сповіщення в реальному часі: ' + data.message);
+      loadProducts();
+    });
 
-  socket.on("product_updated", (data) => {
-    alert("🔔 Сповіщення в реальному часі: " + data.message);
-    loadProducts(); 
-  });
-
-
-  return () => {
-    socket.disconnect();
-  };
-}, []);
-// -
+    return () => {
+      socket.disconnect();
+    };
+  }, []);
+  // -
 
   useEffect(() => {
     if (activeTab === 'reports') {
@@ -226,6 +226,17 @@ useEffect(() => {
     loadPositions();
     loadClients();
     loadStatuses();
+  };
+
+  const trackVisit = () => {
+    fetch(`${API_URL}/stats/visit`)
+      .then((r) => r.json())
+      .then((data) => {
+        if (data.count) {
+          setUserVisitCount(data.count);
+        }
+      })
+      .catch(console.error);
   };
 
   const loadProducts = () => {
@@ -672,17 +683,18 @@ useEffect(() => {
     });
   };
 
-const handleProductSubmit = async (e: React.FormEvent<HTMLFormElement>) => { 
-  e.preventDefault(); 
-  const formData = new FormData(e.currentTarget); 
-    const priceString = formData.get('supplier_price') as string; 
-  const priceRegex = /^\d+(\.\d{1,2})?$/; 
+  const handleProductSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
+    e.preventDefault();
+    const formData = new FormData(e.currentTarget);
+    const priceString = formData.get('supplier_price') as string;
+    const priceRegex = /^\d+(\.\d{1,2})?$/;
 
-  if (priceString && !priceRegex.test(priceString)) {
-    alert("Помилка: Ціна має бути числом у форматі 0.00 (наприклад: 15.50 або 200).");
-    return;
-  }
-
+    if (priceString && !priceRegex.test(priceString)) {
+      alert(
+        'Помилка: Ціна має бути числом у форматі 0.00 (наприклад: 15.50 або 200).',
+      );
+      return;
+    }
 
     const data = {
       name: formData.get('name') as string,
@@ -963,32 +975,38 @@ const handleProductSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     }
   };
 
-const handleEmployeeSubmit = async (e: React.FormEvent<HTMLFormElement>) => { 
-  e.preventDefault(); 
-  const formData = new FormData(e.currentTarget); 
-  
-  const phone = formData.get('phone') as string; 
-  const phoneRegex = /^(?:\+380|0)\d{9}$/;
-  
-  if (phone && !phoneRegex.test(phone)) {
-    alert("Помилка: Невірний формат телефону! Введіть номер у форматі +380XXXXXXXXX або 0XXXXXXXXX.");
-    return;
-  }
+  const handleEmployeeSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
+    e.preventDefault();
+    const formData = new FormData(e.currentTarget);
 
-  const email = formData.get("employee_email") as string; 
-  const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/; 
+    const phone = formData.get('phone') as string;
+    const phoneRegex = /^(?:\+380|0)\d{9}$/;
 
-  if (email && !emailRegex.test(email)) { 
-    alert("Помилка: Невірний формат електронної пошти (приклад: ivan@test.com)."); 
-    return; 
-  }
+    if (phone && !phoneRegex.test(phone)) {
+      alert(
+        'Помилка: Невірний формат телефону! Введіть номер у форматі +380XXXXXXXXX або 0XXXXXXXXX.',
+      );
+      return;
+    }
 
-  const passport = formData.get('passport') as string; 
-const passportRegex = /^([A-ZА-ЯІЇЄҐ]{2}\d{6}|\d{9})$/i;
-  if (passport && !passportRegex.test(passport)) {
-    alert("Помилка: Невірний формат паспорта! Введіть серію та номер (наприклад: АВ123456) або 9 цифр ID-картки.");
-    return;
-  }
+    const emaiulklk = нгData.get('employee_email') as string;
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+
+    if (email && !emailRegex.test(email)) {
+      alert(
+        'Помилка: Невірний формат електронної пошти (приклад: ivan@test.com).',
+      );
+      return;
+    }
+
+    const passport = formData.get('passport') as string;
+    const passportRegex = /^([A-ZА-ЯІЇЄҐ]{2}\d{6}|\d{9})$/i;
+    if (passport && !passportRegex.test(passport)) {
+      alert(
+        'Помилка: Невірний формат паспорта! Введіть серію та номер (наприклад: АВ123456) або 9 цифр ID-картки.',
+      );
+      return;
+    }
     const data = {
       full_name: formData.get('full_name') as string,
 
@@ -1047,6 +1065,22 @@ const passportRegex = /^([A-ZА-ЯІЇЄҐ]{2}\d{6}|\d{9})$/i;
   return (
     <div style={{ padding: '20px', fontFamily: 'Arial, sans-serif' }}>
       <h1>Система управління рестораном</h1>
+
+      {userVisitCount > 0 && (
+        <div
+          style={{
+            display: 'inline-block',
+            marginBottom: '20px',
+            padding: '10px 16px',
+            backgroundColor: '#f0f4ff',
+            color: '#1f4eb8',
+            borderRadius: '18px',
+            fontWeight: 600,
+          }}
+        >
+          👁️ Ви відвідали цю сторінку: {userVisitCount} разів
+        </div>
+      )}
 
       <div
         style={{

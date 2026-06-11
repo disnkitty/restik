@@ -216,6 +216,11 @@ CREATE TABLE Transactions (
         ON UPDATE CASCADE
 );
 
+CREATE TABLE User_Visits (
+    ip_address VARCHAR(50) PRIMARY KEY,
+    visit_count INT DEFAULT 1,
+    last_visit DATETIME
+);
 
 INSERT INTO Product_categories (name_product_category) VALUES 
 ('Овочі'), ('М''ясо'), ('Молочні продукти'), ('Спеції'), ('Борошно');
