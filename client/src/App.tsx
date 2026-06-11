@@ -17,8 +17,11 @@ import type { Order } from './types/Order';
 import type { OrderDetail } from './types/OrderDetail';
 import type { Transaction } from './types/Transaction';
 import './App.css';
+import GalleryController from './components/GalleryController';
 
 const API_URL = 'http://localhost:3001';
+// Prevent automatic backend calls during frontend-only testing
+const USE_BACKEND = false;
 
 type TabType =
   | 'products'
@@ -36,6 +39,7 @@ type TabType =
   | 'statuses'
   | 'reports'
   | 'stats'
+  | 'gallery'
   | 'sql';
 
 function App() {
@@ -186,11 +190,14 @@ function App() {
   >(null);
 
   useEffect(() => {
-    loadAllData();
-    trackVisit();
+    if (USE_BACKEND) {
+      loadAllData();
+      trackVisit();
+    }
   }, []);
 
   useEffect(() => {
+    if (!USE_BACKEND) return;
     const socket = io(API_URL);
 
     socket.on('product_updated', (data) => {
@@ -1180,6 +1187,19 @@ function App() {
           }}
         >
           Рецепти
+        </button>
+        <button
+          onClick={() => setActiveTab('gallery')}
+          style={{
+            padding: '10px 20px',
+            backgroundColor: activeTab === 'gallery' ? '#4CAF50' : '#ddd',
+            color: 'white',
+            border: 'none',
+            borderRadius: '4px',
+            cursor: 'pointer',
+          }}
+        >
+          Фотогалерея
         </button>
         <button
           onClick={() => setActiveTab('categories')}
@@ -5573,6 +5593,13 @@ function App() {
               )}
             </div>
           </div>
+        </div>
+      )}
+
+      {activeTab === 'gallery' && (
+        <div>
+          <h2>Фотогалерея</h2>
+          <GalleryController />
         </div>
       )}
 
